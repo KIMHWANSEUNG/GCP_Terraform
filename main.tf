@@ -72,10 +72,40 @@ resource "google_compute_firewall" "vm_firewall"{
 data "google_client_openid_userinfo" "me"{
 }
 
-resource "google_os_login_ssh_public_key" "cache"{
+resource "google_os_login_ssh_public_key" "firewall_ssh"{
   user = data.google_client_openid_userinfo.me.email
   key = file("./gcp_rsa.pub")
 }
+
+resource "google_redis_instance" "vpc_redis" {
+  name = "bespin-khs-redis"
+  memory_size_gb = 1
+  authorized_network = data.google_compute_network.vpc_network.id
+  redis-version = "REDIS_4_0"
+  tier = "BASIC"
+}
+
+resource "google_storage_bucket" "storage_bucket" {
+  name = "bespin-khs-gcs"
+  project = "terraform-test-302307"
+  location = "US"
+  stoage_class = "STANDARD"
+  retention_policy {
+    retention_period = ""
+  }
+  lifecycle_rule{
+    condition {
+      age = "1"
+    }
+    action {
+      type = "Delete"
+    }
+  }
+}
+
+
+
+
 
   
 
