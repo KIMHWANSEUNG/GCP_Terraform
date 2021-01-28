@@ -17,15 +17,14 @@ resource "google_compute_instance_group_manager" "instance_manager"{
 }
 //source image
 data "google_compute_image" "my_image"{
-  family = "debian-9"
-  project = "debian-cloud"
+  family = "ubuntu-1804-lts"
+  project = "ubuntu-os-cloud"
 }
 
 //VM instance template
 resource "google_compute_instance_template" "vm_template"{
   name = "bespin-khs-template"
   machine_type = "n1-standard-1"
-  metadata_startup_script = "$(file("startupscript.sh"))"
   disk {
     source_image = data.google_compute_image.my_image.id
   	auto_delete = true
@@ -80,28 +79,15 @@ resource "google_os_login_ssh_public_key" "firewall_ssh"{
 resource "google_redis_instance" "vpc_redis" {
   name = "bespin-khs-redis"
   memory_size_gb = 1
-  authorized_network = data.google_compute_network.vpc_network.id
-  redis-version = "REDIS_4_0"
+  authorized_network = google_compute_network.vpc_network.id
+  redis_version = "REDIS_4_0"
   tier = "BASIC"
 }
 
-resource "google_storage_bucket" "storage_bucket" {
-  name = "bespin-khs-gcs"
-  project = "terraform-test-302307"
-  location = "US"
-  stoage_class = "STANDARD"
-  retention_policy {
-    retention_period = ""
-  }
-  lifecycle_rule{
-    condition {
-      age = "1"
-    }
-    action {
-      type = "Delete"
-    }
-  }
-}
+
+
+
+
 
 
 
